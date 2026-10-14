@@ -28,6 +28,7 @@
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+button,a,.mbar{-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 .rate span{white-space:nowrap}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
@@ -120,12 +121,35 @@ footer{font-size:12.5px;color:var(--muted)}
 .item.bought .pic img{opacity:.6}
 .item.bought .y{text-decoration:line-through;opacity:.6}
 
+.mbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--paper);border-top:1px solid var(--line);
+  box-shadow:0 -6px 18px rgba(0,0,0,.08);justify-content:space-between;align-items:center;gap:12px;cursor:pointer;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.mbar .k{display:block;font-size:11.5px;color:var(--muted)}
+.mbar b{font-family:var(--f-display);font-size:18px;font-weight:700}
+.mbar .r{text-align:right}
+.mbar .r b{color:var(--matcha)}
+.mbar .thb{font-family:var(--f-mono);font-size:13px;margin-left:6px;color:var(--ink)}
 @media (max-width:620px){
-  .item{grid-template-columns:1fr}
-  .pic{border-right:0;border-bottom:1px solid var(--line)}
-  .pic img{max-height:260px}
-  .top{flex-direction:column}
-  .price{text-align:left}
+  body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+  .wrap{gap:16px}
+  .summary{padding:14px}
+  .item{grid-template-columns:84px minmax(0,1fr);gap:12px 14px;padding:14px;align-items:start}
+  .body{display:contents}
+  .pic{grid-column:1;grid-row:1;width:84px;height:84px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .pic img{width:100%;height:100%;max-height:none;object-fit:cover}
+  .pic .idx{top:4px;left:4px;font-size:11px;padding:0 5px}
+  .top{grid-column:2;grid-row:1;flex-direction:column;gap:4px;min-width:0}
+  h2{font-size:17px}
+  .th{font-size:12.5px}
+  .price{text-align:left;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .price .y{font-size:18px}
+  .chips,.lines,.note,.paid,.actions{grid-column:1/-1}
+  .actions{order:1;flex-wrap:nowrap}
+  .chips{order:2}.lines{order:3}.note{order:4}.paid{order:5}
+  .seg{flex:1}
+  .seg-btn{flex:1;padding:9px 8px}
+  .actions .btn{padding:9px 12px;white-space:nowrap}
+  .mbar{display:flex}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -152,6 +176,11 @@ footer{font-size:12.5px;color:var(--muted)}
   <div class="list" id="list"></div>
 
   <footer>ราคาเป็นราคาประมาณจากหน้าร้าน/เว็บ อาจต่างไปตามสาขาและภาษี</footer>
+</div>
+
+<div class="mbar" id="mbar" role="button" tabindex="0" aria-label="ดูสรุปยอดด้านบน">
+  <div><span class="k">ซื้อแล้ว</span><b id="mDone">0/4</b></div>
+  <div class="r"><span class="k">จ่ายจริงแล้วรวม</span><b id="mPaid">0円</b><span class="thb" id="mThb">฿0</span></div>
 </div>
 
 <div class="lightbox" id="lb" hidden><img id="lbImg" alt=""></div>
@@ -256,6 +285,11 @@ function savePrice(id){
   setTimeout(render,2600);
 }
 
+const mbar=document.getElementById("mbar");
+const toTop=()=>document.querySelector(".summary").scrollIntoView({behavior:"smooth",block:"start"});
+mbar.addEventListener("click",toTop);
+mbar.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toTop()}});
+
 const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg");
 lb.addEventListener("click",()=>lb.hidden=true);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")lb.hidden=true});
@@ -343,6 +377,9 @@ function render(){
   document.getElementById("paidThb").textContent = "= ฿"+thb2(paidSum);
   const pm=document.getElementById("paidMiss"); pm.hidden=!missing; pm.textContent=`ซื้อแล้วแต่ยังไม่ใส่ราคา ${missing} รายการ`;
   document.getElementById("bar").style.width = (done/items.length*100)+"%";
+  document.getElementById("mDone").textContent = done+"/"+items.length;
+  document.getElementById("mPaid").textContent = yen(paidSum);
+  document.getElementById("mThb").textContent = "฿"+thb2(paidSum);
 }
 render();
 </script>
