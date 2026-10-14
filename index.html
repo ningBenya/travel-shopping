@@ -78,7 +78,18 @@ h2{font-family:var(--f-display);font-size:19px;font-weight:600;margin:2px 0 0;li
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:2px}
 .btn{font:inherit;font-size:13.5px;font-weight:500;border-radius:8px;padding:6px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{border-color:var(--matcha)}
-.btn.check[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:var(--paper)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg);gap:2px}
+.seg-btn{font:inherit;font-size:13.5px;font-weight:500;border:0;background:transparent;color:var(--muted);padding:6px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn[data-v="0"][aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.seg-btn[data-v="1"][aria-pressed="true"]{background:var(--done);color:var(--paper)}
+.seg-btn:focus-visible{outline:2px solid var(--matcha);outline-offset:1px}
+.savebtn{font:inherit;font-size:13.5px;font-weight:600;border:0;border-radius:8px;padding:6px 14px;background:var(--done);color:var(--paper);cursor:pointer}
+.savebtn:disabled{background:var(--line);color:var(--muted);cursor:default}
+.savebtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.paid .st{font-size:12.5px;font-weight:500}
+.paid .st.dirty{color:var(--sakura)}
+.paid .st.ok{color:var(--matcha)}
 .btn:focus-visible,.pic:focus-visible,.rate input:focus-visible{outline:2px solid var(--matcha);outline-offset:2px}
 
 .lightbox{position:fixed;inset:0;background:rgba(10,12,9,.86);display:flex;align-items:center;justify-content:center;
@@ -97,7 +108,7 @@ footer{font-size:12.5px;color:var(--muted)}
 .sync.live{color:var(--matcha)}
 .sync.live i{background:var(--matcha);box-shadow:0 0 0 3px var(--matcha-soft)}
 .sync.ro i{background:var(--sakura)}
-.readonly .check,.readonly .paid input,.readonly #rate{pointer-events:none;opacity:.7}
+.readonly .seg,.readonly .savebtn,.readonly .paid input,.readonly #rate{pointer-events:none;opacity:.7}
 .paid{background:var(--matcha-soft);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .paid label{font-size:13.5px;font-weight:600;color:var(--matcha);white-space:nowrap}
 .paid .in{display:inline-flex;align-items:center;gap:6px}
@@ -176,7 +187,7 @@ const yen = n => n.toLocaleString("en-US")+"円";
 let bought = {};
 try{ bought = JSON.parse(localStorage.getItem("nat-bought")||"{}") }catch(e){}
 const save = () => { try{ localStorage.setItem("nat-bought", JSON.stringify(bought)) }catch(e){} };
-let paid = {};
+let paid = {}; const dirty = {}, justSaved = {};
 try{ paid = JSON.parse(localStorage.getItem("nat-paid")||"{}") }catch(e){}
 const savePaid = () => { try{ localStorage.setItem("nat-paid", JSON.stringify(paid)) }catch(e){} };
 
@@ -204,29 +215,46 @@ items.forEach((it,i)=>{
       <div class="paid" hidden>
         <label for="paid-${it.id}">ราคาที่จ่ายจริง</label>
         <span class="in"><input id="paid-${it.id}" type="number" inputmode="numeric" min="0" step="1" placeholder="${it.min}">円</span>
+        <button type="button" class="savebtn" id="save-${it.id}" disabled>บันทึก</button>
         <span class="eq" data-eq>= ฿0</span>
+        <span class="st" data-st></span>
         <span class="diff" data-diff></span>
       </div>
       <div class="actions">
-        <button class="btn check" type="button" id="chk-${it.id}" aria-pressed="false">☐ ยังไม่ได้ซื้อ</button>
+        <div class="seg" role="group" aria-label="สถานะการซื้อ">
+          <button type="button" class="seg-btn" data-v="0" id="no-${it.id}" aria-pressed="true">ยังไม่ซื้อ</button>
+          <button type="button" class="seg-btn" data-v="1" id="chk-${it.id}" aria-pressed="false">✓ ซื้อแล้ว</button>
+        </div>
         ${it.map?`<a class="btn" href="${it.map}" target="_blank" rel="noopener">เปิดแผนที่ร้าน ↗</a>`:""}
       </div>
     </div>`;
   el.querySelector(".pic").addEventListener("click",()=>{lbImg.src=IMG[it.id];lbImg.alt=it.name;lb.hidden=false});
-  el.querySelector(".check").addEventListener("click",()=>{
+  el.querySelectorAll(".seg-btn").forEach(b=>b.addEventListener("click",()=>{
     if(readOnly) return;
-    bought[it.id]=!bought[it.id];save();render();persist(it.id,0);
-    if(bought[it.id]) el.querySelector(".paid input").focus();
-  });
-  const pin=el.querySelector(".paid input");
+    const v=b.dataset.v==="1";
+    if(!!bought[it.id]===v) return;
+    bought[it.id]=v;save();render();persist(it.id);
+    if(v) el.querySelector(".paid input").focus();
+  }));
+  const pin=el.querySelector(".paid input"), sbtn=el.querySelector(".savebtn");
   if(paid[it.id]!=null) pin.value=paid[it.id];
-  pin.addEventListener("input",()=>{
-    const v=parseFloat(pin.value);
-    if(isNaN(v)) delete paid[it.id]; else paid[it.id]=v;
-    savePaid();render();persist(it.id,700);
-  });
+  pin.addEventListener("input",()=>{ dirty[it.id]=pin.value; render(); });
+  pin.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); savePrice(it.id); } });
+  pin.addEventListener("blur",()=>{ if(dirty[it.id]!=null) savePrice(it.id); });
+  sbtn.addEventListener("mousedown",e=>e.preventDefault());
+  sbtn.addEventListener("click",()=>savePrice(it.id));
   list.appendChild(el);
 });
+
+function savePrice(id){
+  if(readOnly || dirty[id]==null) return;
+  const v=parseFloat(dirty[id]);
+  if(isNaN(v)) delete paid[id]; else paid[id]=Math.max(0,v);
+  delete dirty[id];
+  savePaid(); persist(id);
+  justSaved[id]=Date.now(); render();
+  setTimeout(render,2600);
+}
 
 const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg");
 lb.addEventListener("click",()=>lb.hidden=true);
@@ -254,11 +282,9 @@ function setStatus(kind){
   s.className="sync "+map[0]; s.lastChild.textContent=map[1];
 }
 function onWriteErr(){ setStatus("err") }
-function persist(id,ms){
+function persist(id){
   if(!fdb) return;
-  debounce(id,()=>{
-    fdb.ref("shop/"+id).set({bought:!!bought[id],paid:paid[id]??null}).catch(onWriteErr);
-  },ms);
+  fdb.ref("shop/"+id).set({bought:!!bought[id],paid:paid[id]??null}).catch(onWriteErr);
 }
 (function(){
   const cfg=window.FIREBASE_CONFIG;
@@ -272,7 +298,7 @@ function persist(id,ms){
     bought=nb; paid=np;
     items.forEach(it=>{
       const inp=document.getElementById("paid-"+it.id);
-      if(document.activeElement!==inp) inp.value = paid[it.id]!=null ? paid[it.id] : "";
+      if(dirty[it.id]==null) inp.value = paid[it.id]!=null ? paid[it.id] : "";
     });
     render();
   },()=>setStatus("err"));
@@ -294,13 +320,20 @@ function render(){
     const box=el.querySelector(".paid"); box.hidden=!b;
     const p=paid[it.id];
     if(b){ if(p!=null) paidSum+=p; else missing++; }
-    el.querySelector("[data-eq]").textContent = p!=null ? "= ฿"+thb2(p) : "ใส่ราคาเป็นเยน";
+    const isDirty=dirty[it.id]!=null, pv=isDirty?parseFloat(dirty[it.id]):p;
+    el.querySelector("[data-eq]").textContent = (pv!=null && !isNaN(pv)) ? "= ฿"+thb2(pv) : "ใส่ราคาเป็นเยน";
+    el.querySelector(".savebtn").disabled = !isDirty;
+    const st=el.querySelector("[data-st]");
+    if(isDirty){ st.className="st dirty"; st.textContent="ยังไม่บันทึก · กด บันทึก หรือ Enter"; }
+    else if(justSaved[it.id] && Date.now()-justSaved[it.id]<2500){ st.className="st ok"; st.textContent="บันทึกแล้ว ✓"; }
+    else if(p!=null){ st.className="st"; st.textContent=""; }
+    else { st.className="st"; st.textContent=""; }
     const d = p!=null ? p-(it.min===it.max?it.min:(it.min+it.max)/2) : null;
     el.querySelector("[data-diff]").textContent = d==null ? "" :
       d===0 ? "ตรงกับราคาประมาณ" : (d>0?"แพงกว่าที่ประมาณ ":"ถูกกว่าที่ประมาณ ")+Math.abs(Math.round(d)).toLocaleString()+"円";
     el.classList.toggle("bought",b);
-    const btn=el.querySelector(".check");
-    btn.setAttribute("aria-pressed",b); btn.textContent = b ? "✓ ซื้อแล้ว" : "☐ ยังไม่ได้ซื้อ";
+    el.querySelector('.seg-btn[data-v="1"]').setAttribute("aria-pressed",b);
+    el.querySelector('.seg-btn[data-v="0"]').setAttribute("aria-pressed",!b);
     el.querySelector("[data-thb]").textContent = "≈ ฿"+(it.min===it.max?thb(it.min):thb(it.min)+"–"+thb(it.max));
   });
   document.getElementById("total").textContent = `${min.toLocaleString()}–${yen(max)}`;
