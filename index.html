@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>รายการฝากซื้อ Nat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Noto+Sans+JP:wght@500&display=swap">
+<style>
+/* Layout: a Japan-trip order slip — summary strip on top, one row per item with photo, spec chips and a "bought" stamp */
+:root{
+  --bg:#f3f4ef; --paper:#ffffff; --ink:#1f2620; --muted:#66705f; --line:#dde1d6;
+  --matcha:#4c7a3a; --matcha-soft:#e6eedf; --sakura:#c4566e; --sakura-soft:#f8e6ea;
+  --done:#4c7a3a;
+  --f-display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --f-jp:"Noto Sans JP","Hiragino Sans",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141812; --paper:#1c211a; --ink:#e7ebe2; --muted:#9aa591; --line:#2e362b;
+  --matcha:#8dbf72; --matcha-soft:#26331f; --sakura:#ec8fa3; --sakura-soft:#3a2229; --done:#8dbf72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141812; --paper:#1c211a; --ink:#e7ebe2; --muted:#9aa591; --line:#2e362b;
+  --matcha:#8dbf72; --matcha-soft:#26331f; --sakura:#ec8fa3; --sakura-soft:#3a2229; --done:#8dbf72; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+.rate span{white-space:nowrap}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:22px}
+.jp{font-family:var(--f-jp);font-weight:500}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+header{display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-size:clamp(28px,6vw,40px);line-height:1.1;margin:0;text-wrap:balance;font-weight:700}
+h1 .jp{color:var(--matcha);font-size:.55em;margin-left:8px;vertical-align:middle}
+
+.summary{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 20px;align-items:end}
+.stat{display:grid;gap:2px;min-width:0}
+.stat .k{font-size:12.5px;color:var(--muted)}
+.stat .v{font-family:var(--f-display);font-size:24px;font-weight:600;line-height:1.2}
+.stat .v small{font-size:14px;color:var(--muted);font-weight:500}
+.bar{grid-column:1/-1;height:6px;border-radius:99px;background:var(--matcha-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--matcha);transition:width .3s}
+.rate{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.rate input{width:72px;font:inherit;font-family:var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+
+.list{display:grid;gap:14px}
+.item{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  display:grid;grid-template-columns:200px 1fr;transition:opacity .2s}
+.item.bought{opacity:.62}
+.item.bought .pic{filter:grayscale(.5)}
+.pic{background:#fff;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);position:relative;cursor:zoom-in;padding:0;border-top:0;border-bottom:0;border-left:0}
+.pic img{width:100%;height:100%;max-height:230px;object-fit:contain;display:block}
+.pic .idx{position:absolute;top:8px;left:8px;background:var(--ink);color:var(--paper);font-family:var(--f-mono);font-size:12px;border-radius:6px;padding:1px 7px}
+.body{padding:16px 18px;display:grid;gap:10px;min-width:0;align-content:start}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.shop{font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+h2{font-family:var(--f-display);font-size:19px;font-weight:600;margin:2px 0 0;line-height:1.3;text-wrap:balance}
+.th{font-size:13.5px;color:var(--muted)}
+.price{text-align:right;white-space:nowrap}
+.price .y{font-family:var(--f-display);font-size:21px;font-weight:700;color:var(--sakura)}
+.price .b{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;border-radius:99px;padding:2px 10px;background:var(--matcha-soft);color:var(--matcha);font-weight:500}
+.chip.warn{background:var(--sakura-soft);color:var(--sakura)}
+.lines{border-top:1px dashed var(--line);padding-top:8px;display:grid;gap:4px;font-size:14px}
+.line{display:flex;justify-content:space-between;gap:12px}
+.line span:last-child{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:13px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:2px}
+.btn{font:inherit;font-size:13.5px;font-weight:500;border-radius:8px;padding:6px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--matcha)}
+.btn.check[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:var(--paper)}
+.btn:focus-visible,.pic:focus-visible,.rate input:focus-visible{outline:2px solid var(--matcha);outline-offset:2px}
+
+.lightbox{position:fixed;inset:0;background:rgba(10,12,9,.86);display:flex;align-items:center;justify-content:center;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));z-index:10;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px;background:#fff}
+footer{font-size:12.5px;color:var(--muted)}
+.stat .sub{font-size:13px;color:var(--muted)}
+.stat.paidstat{grid-column:1/-1;order:9;border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.stat.paidstat .k{font-weight:600;color:var(--matcha);font-size:14px}
+.stat.paidstat .v{color:var(--matcha);font-size:28px}
+.stat.paidstat .sub{font-size:18px;color:var(--ink);font-weight:500}
+.stat.paidstat .miss{font-size:12.5px;color:var(--sakura);flex-basis:100%}
+.bar{order:8}
+.sync{grid-column:1/-1;order:10;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none}
+.sync.live{color:var(--matcha)}
+.sync.live i{background:var(--matcha);box-shadow:0 0 0 3px var(--matcha-soft)}
+.sync.ro i{background:var(--sakura)}
+.readonly .check,.readonly .paid input,.readonly #rate{pointer-events:none;opacity:.7}
+.paid{background:var(--matcha-soft);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.paid label{font-size:13.5px;font-weight:600;color:var(--matcha);white-space:nowrap}
+.paid .in{display:inline-flex;align-items:center;gap:6px}
+.paid input{width:120px;font:inherit;font-family:var(--f-mono);font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:5px 8px;text-align:right}
+.paid input:focus-visible{outline:2px solid var(--matcha);outline-offset:1px}
+.paid .eq{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:500;margin-left:auto;white-space:nowrap}
+.paid .diff{font-size:12.5px;color:var(--muted);flex-basis:100%}
+.item.bought{opacity:1}
+.item.bought .pic img{opacity:.6}
+.item.bought .y{text-decoration:line-through;opacity:.6}
+
+@media (max-width:620px){
+  .item{grid-template-columns:1fr}
+  .pic{border-right:0;border-bottom:1px solid var(--line)}
+  .pic img{max-height:260px}
+  .top{flex-direction:column}
+  .price{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">ฝากซื้อจากญี่ปุ่น · 4 รายการ</div>
+    <h1>รายการฝากซื้อ Nat <span class="jp">お買い物リスト</span></h1>
+  </header>
+
+  <section class="summary" aria-label="สรุป">
+    <div class="stat"><span class="k">ยอดรวมโดยประมาณ</span><span class="v num" id="total">—</span></div>
+    <div class="stat"><span class="k">เป็นเงินบาทราว ๆ</span><span class="v num" id="totalThb">—</span></div>
+    <div class="stat"><span class="k">ซื้อแล้ว</span><span class="v"><span id="doneCount">0</span> <small>/ 4 รายการ</small></span></div>
+    <div class="stat paidstat"><span class="k">จ่ายจริงแล้วรวม</span><span class="v num" id="paidYen">0円</span><span class="sub num" id="paidThb">= ฿0</span><span class="miss" id="paidMiss" hidden></span></div>
+    <label class="rate" for="rate"><span>เรท 1 เยน =</span><input id="rate" type="number" step="0.001" min="0" value="0.22"><span>บาท (แก้ได้)</span></label>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="sync" id="sync"><i></i><span>เก็บข้อมูลในเครื่องนี้เท่านั้น</span></div>
+  </section>
+
+  <div class="list" id="list"></div>
+
+  <footer>ราคาเป็นราคาประมาณจากหน้าร้าน/เว็บ อาจต่างไปตามสาขาและภาษี</footer>
+</div>
+
+<div class="lightbox" id="lb" hidden><img id="lbImg" alt=""></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const IMG = {matcha:"images/matcha.jpg",uniqlo:"images/uniqlo.jpg",canmake:"images/canmake.jpg",honey:"images/honey.jpg"};
+
+/* ===== แก้รายการสินค้าได้ตรงนี้ =====
+   min / max = ราคาประมาณ (เยน) ถ้าราคาแน่นอนใส่ min กับ max เท่ากัน
+   รูปใส่ไว้ในโฟลเดอร์ images แล้วเพิ่มชื่อไฟล์ใน IMG ด้านบน */
+const items = [
+  {id:"matcha", shop:"Ocha no Kakien Amakoubou", map:"https://maps.app.goo.gl/kmfEXjeBrMfq4Za68",
+   name:"ผงมัทฉะ Nochimukashi", jp:"後昔", th:"ผงมัทฉะ 40 g",
+   chips:[{t:"40 g"},{t:"ป้ายร้าน: 1,000円 / 20 g"}],
+   lines:[["20 g × 2", 2000]], min:2000, max:2000,
+   note:"ในรูปคือป้ายราคาที่ร้าน แถวที่ตีกรอบเขียวคือตัวที่ต้องการ (後昔 nochimukashi)"},
+  {id:"uniqlo", shop:"Uniqlo", name:"AIRism UV Protection Mesh Full-Zip Hoodie", jp:"エアリズムUVカットメッシュフルジップパーカ", th:"เสื้อฮู้ดซิปกันแดด",
+   chips:[{t:"ไซซ์ L"},{t:"สีดำ (Black)"}],
+   lines:[["1 ตัว", 2990]], min:2990, max:2990},
+  {id:"canmake", shop:"Canmake", name:"Marshmallow Finish Powder", jp:"マシュマロフィニッシュパウダー", th:"แป้งพัฟ",
+   chips:[{t:"เบอร์ 01 Dearest Bouquet"}],
+   lines:[["แบบตลับ × 1  (1,034円)", 1034],["แบบ Refill × 2  (770円)", 1540]], min:2574, max:2574},
+  {id:"honey", shop:"&honey", name:"Melty Matomake Stick 4.0 Super Hold", jp:"メルティ まとめ髪スティック スーパーホールド", th:"มาสคาร่าเก็บลูกผม",
+   chips:[{t:"Super Hold"}],
+   lines:[["1 แท่ง", "1,000–1,100"]], min:1000, max:1100,
+   note:"ขายตามร้านยา/ดรักสโตร์ เช่น Matsukiyo, Don Quijote"}
+];
+
+const yen = n => n.toLocaleString("en-US")+"円";
+let bought = {};
+try{ bought = JSON.parse(localStorage.getItem("nat-bought")||"{}") }catch(e){}
+const save = () => { try{ localStorage.setItem("nat-bought", JSON.stringify(bought)) }catch(e){} };
+let paid = {};
+try{ paid = JSON.parse(localStorage.getItem("nat-paid")||"{}") }catch(e){}
+const savePaid = () => { try{ localStorage.setItem("nat-paid", JSON.stringify(paid)) }catch(e){} };
+
+const list = document.getElementById("list");
+items.forEach((it,i)=>{
+  const priceTxt = it.min===it.max ? yen(it.min) : `${it.min.toLocaleString()}–${yen(it.max)}`;
+  const el = document.createElement("article");
+  el.className = "item"; el.dataset.id = it.id;
+  el.innerHTML = `
+    <button class="pic" type="button" aria-label="ดูรูปใหญ่: ${it.name}">
+      <span class="idx">${i+1}</span><img src="${IMG[it.id]}" alt="${it.name}">
+    </button>
+    <div class="body">
+      <div class="top">
+        <div>
+          <div class="shop">${it.shop}</div>
+          <h2>${it.name}</h2>
+          <div class="th">${it.th} · <span class="jp">${it.jp}</span></div>
+        </div>
+        <div class="price"><div class="y num">${priceTxt}</div><div class="b num" data-thb></div></div>
+      </div>
+      <div class="chips">${it.chips.map(c=>`<span class="chip${c.warn?" warn":""}">${c.t}</span>`).join("")}</div>
+      <div class="lines">${it.lines.map(l=>`<div class="line"><span>${l[0]}</span><span>${typeof l[1]==="number"?yen(l[1]):l[1]+"円"}</span></div>`).join("")}</div>
+      ${it.note?`<div class="note">${it.note}</div>`:""}
+      <div class="paid" hidden>
+        <label for="paid-${it.id}">ราคาที่จ่ายจริง</label>
+        <span class="in"><input id="paid-${it.id}" type="number" inputmode="numeric" min="0" step="1" placeholder="${it.min}">円</span>
+        <span class="eq" data-eq>= ฿0</span>
+        <span class="diff" data-diff></span>
+      </div>
+      <div class="actions">
+        <button class="btn check" type="button" id="chk-${it.id}" aria-pressed="false">☐ ยังไม่ได้ซื้อ</button>
+        ${it.map?`<a class="btn" href="${it.map}" target="_blank" rel="noopener">เปิดแผนที่ร้าน ↗</a>`:""}
+      </div>
+    </div>`;
+  el.querySelector(".pic").addEventListener("click",()=>{lbImg.src=IMG[it.id];lbImg.alt=it.name;lb.hidden=false});
+  el.querySelector(".check").addEventListener("click",()=>{
+    if(readOnly) return;
+    bought[it.id]=!bought[it.id];save();render();persist(it.id,0);
+    if(bought[it.id]) el.querySelector(".paid input").focus();
+  });
+  const pin=el.querySelector(".paid input");
+  if(paid[it.id]!=null) pin.value=paid[it.id];
+  pin.addEventListener("input",()=>{
+    const v=parseFloat(pin.value);
+    if(isNaN(v)) delete paid[it.id]; else paid[it.id]=v;
+    savePaid();render();persist(it.id,700);
+  });
+  list.appendChild(el);
+});
+
+const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg");
+lb.addEventListener("click",()=>lb.hidden=true);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")lb.hidden=true});
+const rateEl=document.getElementById("rate");
+try{const r=localStorage.getItem("nat-rate"); if(r) rateEl.value=r}catch(e){}
+rateEl.addEventListener("input",()=>{
+  try{localStorage.setItem("nat-rate",rateEl.value)}catch(e){};render();
+  const r=parseFloat(rateEl.value);
+  if(fdb && !isNaN(r)) debounce("rate",()=>fdb.ref("config/rate").set(r).catch(onWriteErr),700);
+});
+
+/* ===== ซิงก์ข้อมูลร่วมกันผ่าน Firebase (ตั้งค่าในไฟล์ firebase-config.js) ===== */
+let fdb=null, readOnly=false;
+const timers={};
+function debounce(key,fn,ms){clearTimeout(timers[key]);timers[key]=setTimeout(fn,ms)}
+function setStatus(kind){
+  const s=document.getElementById("sync");
+  const map={
+    local:["","เก็บข้อมูลในเครื่องนี้เท่านั้น (ยังไม่ได้ตั้งค่า Firebase)"],
+    wait:["","กำลังเชื่อมต่อ…"],
+    live:["live","ซิงก์อยู่ · ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลเดียวกัน"],
+    err:["ro","เชื่อมต่อไม่ได้ ข้อมูลที่แก้จะไม่ถูกส่งไปให้คนอื่น"]
+  }[kind];
+  s.className="sync "+map[0]; s.lastChild.textContent=map[1];
+}
+function onWriteErr(){ setStatus("err") }
+function persist(id,ms){
+  if(!fdb) return;
+  debounce(id,()=>{
+    fdb.ref("shop/"+id).set({bought:!!bought[id],paid:paid[id]??null}).catch(onWriteErr);
+  },ms);
+}
+(function(){
+  const cfg=window.FIREBASE_CONFIG;
+  if(!cfg || !cfg.databaseURL || !window.firebase){ setStatus("local"); return }
+  setStatus("wait");
+  try{ firebase.initializeApp(cfg); fdb=firebase.database(); }catch(e){ setStatus("err"); return }
+  fdb.ref(".info/connected").on("value",s=>setStatus(s.val()?"live":"wait"));
+  fdb.ref("shop").on("value",snap=>{
+    const v=snap.val()||{}, nb={}, np={};
+    Object.keys(v).forEach(k=>{ nb[k]=!!v[k].bought; if(typeof v[k].paid==="number") np[k]=v[k].paid; });
+    bought=nb; paid=np;
+    items.forEach(it=>{
+      const inp=document.getElementById("paid-"+it.id);
+      if(document.activeElement!==inp) inp.value = paid[it.id]!=null ? paid[it.id] : "";
+    });
+    render();
+  },()=>setStatus("err"));
+  fdb.ref("config/rate").on("value",s=>{
+    const r=s.val();
+    if(typeof r==="number" && document.activeElement!==rateEl){ rateEl.value=r; render() }
+  });
+})();
+
+function render(){
+  const rate = parseFloat(rateEl.value)||0;
+  const thb = n => Math.round(n*rate).toLocaleString("en-US");
+  const thb2 = n => (n*rate).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  let min=0,max=0,done=0,paidSum=0,missing=0;
+  items.forEach(it=>{
+    min+=it.min; max+=it.max;
+    const el=list.querySelector(`[data-id="${it.id}"]`), b=!!bought[it.id];
+    if(b) done++;
+    const box=el.querySelector(".paid"); box.hidden=!b;
+    const p=paid[it.id];
+    if(b){ if(p!=null) paidSum+=p; else missing++; }
+    el.querySelector("[data-eq]").textContent = p!=null ? "= ฿"+thb2(p) : "ใส่ราคาเป็นเยน";
+    const d = p!=null ? p-(it.min===it.max?it.min:(it.min+it.max)/2) : null;
+    el.querySelector("[data-diff]").textContent = d==null ? "" :
+      d===0 ? "ตรงกับราคาประมาณ" : (d>0?"แพงกว่าที่ประมาณ ":"ถูกกว่าที่ประมาณ ")+Math.abs(Math.round(d)).toLocaleString()+"円";
+    el.classList.toggle("bought",b);
+    const btn=el.querySelector(".check");
+    btn.setAttribute("aria-pressed",b); btn.textContent = b ? "✓ ซื้อแล้ว" : "☐ ยังไม่ได้ซื้อ";
+    el.querySelector("[data-thb]").textContent = "≈ ฿"+(it.min===it.max?thb(it.min):thb(it.min)+"–"+thb(it.max));
+  });
+  document.getElementById("total").textContent = `${min.toLocaleString()}–${yen(max)}`;
+  document.getElementById("totalThb").textContent = `฿${thb(min)}–${thb(max)}`;
+  document.getElementById("doneCount").textContent = done;
+  document.getElementById("paidYen").textContent = yen(paidSum);
+  document.getElementById("paidThb").textContent = "= ฿"+thb2(paidSum);
+  const pm=document.getElementById("paidMiss"); pm.hidden=!missing; pm.textContent=`ซื้อแล้วแต่ยังไม่ใส่ราคา ${missing} รายการ`;
+  document.getElementById("bar").style.width = (done/items.length*100)+"%";
+}
+render();
+</script>
+
+</body>
+</html>

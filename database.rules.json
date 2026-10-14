@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "shop": {
+      "$item": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['bought']) && newData.child('bought').isBoolean()"
+      },
+      ".read": true
+    },
+    "config": {
+      "rate": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 10"
+      }
+    }
+  }
+}
