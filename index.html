@@ -159,14 +159,14 @@ footer{font-size:12.5px;color:var(--muted)}
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">ฝากซื้อจากญี่ปุ่น · 4 รายการ</div>
+    <div class="eyebrow">ฝากซื้อจากญี่ปุ่น · 5 รายการ</div>
     <h1>รายการฝากซื้อ <span class="jp">お買い物リスト</span></h1>
   </header>
 
   <section class="summary" aria-label="สรุป">
     <div class="stat"><span class="k">ยอดรวมโดยประมาณ</span><span class="v num" id="total">—</span></div>
     <div class="stat"><span class="k">เป็นเงินบาทราว ๆ</span><span class="v num" id="totalThb">—</span></div>
-    <div class="stat"><span class="k">ซื้อแล้ว</span><span class="v"><span id="doneCount">0</span> <small>/ 4 รายการ</small></span></div>
+    <div class="stat"><span class="k">ซื้อแล้ว</span><span class="v"><span id="doneCount">0</span> <small>/ 5 รายการ</small></span></div>
     <div class="stat paidstat"><span class="k">จ่ายจริงแล้วรวม</span><span class="v num" id="paidYen">0円</span><span class="sub num" id="paidThb">= ฿0</span><span class="miss" id="paidMiss" hidden></span></div>
     <label class="rate" for="rate"><span>เรท 1 เยน =</span><input id="rate" type="number" step="0.001" min="0" value="0.22"><span>บาท (แก้ได้)</span></label>
     <div class="bar" aria-hidden="true"><i id="bar"></i></div>
@@ -189,7 +189,7 @@ footer{font-size:12.5px;color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
-const IMG = {matcha:"images/matcha.jpg",uniqlo:"images/uniqlo.jpg",canmake:"images/canmake.jpg",honey:"images/honey.jpg"};
+const IMG = {matcha:"images/matcha.jpg",uniqlo:"images/uniqlo.jpg",canmake:"images/canmake.jpg",honey:"images/honey.jpg",mask:"images/mask.jpg"};
 
 /* ===== แก้รายการสินค้าได้ตรงนี้ =====
    min / max = ราคาประมาณ (เยน) ถ้าราคาแน่นอนใส่ min กับ max เท่ากัน
@@ -209,7 +209,10 @@ const items = [
   {id:"honey", shop:"&honey", name:"Melty Matomake Stick 4.0 Super Hold", jp:"メルティ まとめ髪スティック スーパーホールド", th:"มาสคาร่าเก็บลูกผม",
    chips:[{t:"Super Hold"},{t:"2 แท่ง"}],
    lines:[["2 แท่ง × 1,000–1,100円", "2,000–2,200"]], min:2000, max:2200,
-   note:"ขายตามร้านยา/ดรักสโตร์ เช่น Matsukiyo, Don Quijote"}
+   note:"ขายตามร้านยา/ดรักสโตร์ เช่น Matsukiyo, Don Quijote"},
+  {id:"mask", shop:"KOSE", name:"Clear Turn Essence Mask Tranexamic Acid", jp:"クリアターン 薬用美白 美容液マスク トラネキサム酸", th:"แผ่นมาส์กหน้า 30 แผ่น",
+   chips:[{t:"30 แผ่น / กล่อง"},{t:"1 กล่อง"}],
+   lines:[["1 กล่อง", "664–1,078"]], min:664, max:1078, note:"ราคาต่างกันตามร้าน"}
 ];
 
 const yen = n => n.toLocaleString("en-US")+"円";
